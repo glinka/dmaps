@@ -20,9 +20,9 @@ def dmaps(data, epsilon):
     sorted_indices = np.argsort(eigvals)
     eigvals = eigvals[sorted_indices]
     eigvects = eigvects[:,sorted_indices]
-    plot_data(data[0,:], data[1,:], data[2,:], eigvects[:,-4], cmap='jet')
-    plot_data(data[0,:], data[1,:], data[2,:], eigvects[:,-2], cmap='jet')
-    plot_data(data[0,:], data[1,:], data[2,:], eigvects[:,-3], cmap='jet')
+    # plot_data(data[0,:], data[1,:], data[2,:], eigvects[:,-4], cmap='jet')
+    # plot_data(data[0,:], data[1,:], data[2,:], eigvects[:,-2], cmap='jet')
+    # plot_data(data[0,:], data[1,:], data[2,:], eigvects[:,-3], cmap='jet')
     plot_plane(eigvects[:,-2], eigvects[:,-3], eigvects[:,-2])
     plot_plane(eigvects[:,-2], eigvects[:,-4], eigvects[:,-2])
 
@@ -40,8 +40,11 @@ def plot_data(x, y, z, color, **kwargs):
 def plot_plane(x, y, color, **kwargs):
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.set_xlabel(r'$\Psi_{2}$')
-    ax.set_ylabel(r'$\Psi_{3}$')
+    ticksize = 24
+    fontsize = 30
+    plt.tick_params(axis='both', which='major', labelsize=ticksize)
+    ax.set_xlabel(r'$\Psi_{2}$', fontsize=fontsize)
+    ax.set_ylabel(r'$\Psi_{4}$', fontsize=fontsize)
     ax.scatter(x, y, c=color, **kwargs)
     plt.show()
 
