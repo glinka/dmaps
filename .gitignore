@@ -1,3 +1,7 @@
 *.pyc
 *~
 *.png
+.depend
+dmaps
+*.o
+*.csv

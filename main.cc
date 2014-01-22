@@ -4,6 +4,9 @@
 #include <vector>
 #include <sstream>
 #include "util_fns.h"
+#include "dmaps.h"
+#include "kernel_fn.h"
+
 std::vector< std::string > parse_arg(const char* char_arg, const std::vector< std::string > possible_args) {
   //determine which possible_args are single-lettered
   std::vector< std::string > shortcut_args;
@@ -94,29 +97,50 @@ int main(int argc, char *argv[]) {
   // and open a corresponding file
   std::vector< std::string > data_options;
   std::vector< std::ofstream* > data_files;
-  data_options.push_back("W");
-  data_options.push_back("A");
-  data_options.push_back("Adj");
-  data_options.push_back("adj");
-  data_options.push_back("eigvects");
-  data_options.push_back("eigvals");
+  struct flags {
+    bool SAVE_W = false, SAVE_EIGVECTS = false, SAVE_EIGVALS = false;
+  } save_flags;
   for(std::vector< std::string >::const_iterator val = output_data.begin(); val != output_data.end(); val++) {
-    bool is_option = false;
-    for(std::vector< std::string >::const_iterator check_val = data_options.begin(); check_val != data_options.end(); val++) {
-      if(*val == *check_val) {
-	is_option = true;
-      }
+    if(*val == "W") {
+      save_flags.SAVE_W = true;
     }
-    if(!is_option) {
+    else if(*val == "eigvects") {
+      save_flags.SAVE_EIGVECTS = true;
+    }
+    else if(*val == "eigvals") {
+      save_flags.SAVE_EIGVALS = true;
+    }
+    else {
       std::cout << "unrecognized output data entry" << std::endl;
       exit(1);
     }
-    else {
-      std::stringstream ss(dir);
-      ss << *val;
-      std::ofstream* new_file = new std::ofstream(ss.str());
-      data_files.push_back(new_file);
-    }
   }
-  
+  // create necessary files to store output data
+  std::ifstream file("test.csv");
+  std::vector< std::vector< double > > test_data = read_data(file);
+  dmaps_output* out = dmaps::map(test_data, gaussian_kernel);
+  if(save_flags.SAVE_W) {
+    std::stringstream ss(dir);
+    ss << "W";
+    std::ofstream W_output(ss.str());
+    save_matrices(W_output, *((*out).W)));
+    W_output.close();
+  }
+  if(save_flags.SAVE_EIGVECTS) {
+    std::stringstream ss(dir);
+    ss << "eigvects";
+    std::ofstream eigvects_output(ss.str());
+    save_matrices(eigvects_output, *out.eigvects);
+    eigvects_output.close();
+  }
+  if(save_flags.SAVE_EIGVALS) {
+    std::stringstream ss(dir);
+    ss << "eigvals";
+    std::ofstream eigvals_output(ss.str());
+    save_vectors(eigvals_output, *out.eigvals);
+    eigvals_output.close();
+  }
+  delete out.W;
+  delete out.eigvects;
+  delete out.eigvals;
 }
