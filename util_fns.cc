@@ -74,13 +74,13 @@ std::vector< std::vector< double > > read_data(std::ifstream& input_file, const 
   return output_data;
 }
 
-void save_matrices(const std::ofstream& out_stream, const std::vector< std::vector< double > >& data) {
-  for(std::vector< std::vector< double > >::const_iterator vect = data.begin(); vect != data.end(); vect++) {
-    save_vectors(out_stream, *vect);
+void save_matrices(std::ofstream& out_stream, const std::vector< std::vector< double >* >& data) {
+  for(std::vector< std::vector< double >* >::const_iterator vect = data.begin(); vect != data.end(); vect++) {
+    save_vectors(out_stream, *(*vect));
   }
 }
 
-void save_vectors(const std::ofstream& out_stream, const std::vector< double >& data) {
+void save_vectors(std::ofstream& out_stream, const std::vector< double >& data) {
   for(std::vector< double >::const_iterator val = data.begin(); val != (data.end()-1); val++) {
     out_stream << *val << " ";
   }

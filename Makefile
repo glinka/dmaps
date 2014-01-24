@@ -1,4 +1,4 @@
-SRCS=main.cc util_fns.cc
+SRCS=main.cc util_fns.cc #my_allocator.cc
 OBJECTS=$(SRCS:.cc=.o)
 
 CXX = g++

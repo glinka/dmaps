@@ -71,8 +71,9 @@ int main(int argc, char *argv[]) {
 	  // "W", "eigvals", "eigvects"
 	  // defaults to saving eigenvalues and eigenvectors
 	  int j = 1;
-	  while((argv[i+j][0] != '-') && (i+j < argc)) {
-	    output_data.push_back(std::string(argv[i+j++]));
+	  while((i+j < argc) && (argv[i+j][0] != '-')) {
+	    output_data.push_back(std::string(argv[i+j]));
+	    j++;
 	  } 
 	  i += j;
 	}
@@ -92,7 +93,7 @@ int main(int argc, char *argv[]) {
   }
   // set default directory name
   if(dir.empty())
-    dir = "datadefault";
+    dir = "datadefault/";
   // check which output_data values are legitimate
   // and open a corresponding file
   std::vector< std::string > data_options;
@@ -120,27 +121,27 @@ int main(int argc, char *argv[]) {
   std::vector< std::vector< double > > test_data = read_data(file);
   dmaps_output* out = dmaps::map(test_data, gaussian_kernel);
   if(save_flags.SAVE_W) {
-    std::stringstream ss(dir);
-    ss << "W";
+    std::stringstream ss;
+    ss << dir << "W";
     std::ofstream W_output(ss.str());
-    save_matrices(W_output, *((*out).W)));
+    save_matrices(W_output, *(out->W));
     W_output.close();
   }
   if(save_flags.SAVE_EIGVECTS) {
-    std::stringstream ss(dir);
-    ss << "eigvects";
+    std::stringstream ss;
+    ss << dir << "eigvects";
     std::ofstream eigvects_output(ss.str());
-    save_matrices(eigvects_output, *out.eigvects);
+    save_matrices(eigvects_output, *(out->eigvects));
     eigvects_output.close();
   }
   if(save_flags.SAVE_EIGVALS) {
-    std::stringstream ss(dir);
-    ss << "eigvals";
+    std::stringstream ss;
+    ss << dir << "eigvals";
     std::ofstream eigvals_output(ss.str());
-    save_vectors(eigvals_output, *out.eigvals);
+    save_vectors(eigvals_output, *(out->eigvals));
     eigvals_output.close();
   }
-  delete out.W;
-  delete out.eigvects;
-  delete out.eigvals;
+  delete out->W;
+  delete out->eigvects;
+  delete out->eigvals;
 }
