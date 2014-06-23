@@ -12,7 +12,7 @@ class dmaps {
  private:
  public:
   template <typename T>
-    static dmaps_output* map(std::vector< T > &input_data, double (*kernel_fn)(T, T));
+    static dmaps_output* map(std::vector< T > &input_data, double (*kernel_fn)(const T&,const T&), const double weight_threshold = 0);
 };
 
 #include "dmaps.tpp"

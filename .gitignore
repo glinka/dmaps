@@ -6,3 +6,4 @@ dmaps
 *.o
 *.csv
 data*
+.nfs*

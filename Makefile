@@ -3,7 +3,7 @@ OBJECTS=$(SRCS:.cc=.o)
 
 CXX = g++
 
-CXXFLAGS = -g -Wall -std=c++0x #-O3
+CXXFLAGS = -g -Wall -std=c++0x -O3
 
 all: dmaps
 

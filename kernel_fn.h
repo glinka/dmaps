@@ -4,8 +4,8 @@
 #include <vector>
 #include <iostream>
 
-double gaussian_kernel(const std::vector< double > x1, const std::vector< double > x2) {
-  double epsilon = 0.01;
+double gaussian_kernel(const std::vector< double >& x1, const std::vector< double >& x2) {
+  double epsilon = 1.25;
   if(x1.size() != x2.size()) {
     std::cout << "array dimensions do not match" << std::endl;
     exit(1);
