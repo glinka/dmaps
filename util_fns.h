@@ -12,5 +12,5 @@ void save_matrices(std::ofstream& out_stream, const std::vector< std::vector< do
 void save_vectors(std::ofstream& out_stream, const std::vector< double >& data, int m = -1);
 std::vector< int > argsort(const std::vector< double >& to_sort);
 std::vector< double > get_sorted_vals(const std::vector< double >& to_sort);
-std::vector< std::vector<double> > get_sorted_vectors(const std::vector< std::vector< double >* >& to_sort, const std::vector< int >& sorted_indices);
+std::vector< std::vector<double> > get_sorted_vectors(const std::vector< std::vector<double> >& to_sort, const std::vector< int >& sorted_indices);
 #endif

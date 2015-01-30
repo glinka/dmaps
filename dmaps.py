@@ -33,7 +33,16 @@ def get_header_data(header_str):
             params[key] = int(params[key])
     return params
 
-def dmaps(data, epsilon):
+## embeds data through DMAPS algorithm
+# @param data list of input data to be embedded
+# @param kernel kernel function acting on two data points
+# @param k number of dimensions to embed into
+def dmaps(data, kernel, k):
+    
+
+
+
+def dmaps_nongeneral(data, epsilon):
     """
     m is number of data pts
     n is dimension of each pt
@@ -144,7 +153,7 @@ if __name__=="__main__":
     print 'swissroll generated'
     # plot_data(data[0,:], data[1,:], data[2,:], 'c', alpha=0.7)
     start = time.clock()
-    eigvals, eigvects = dmaps(data, epsilon)
+    eigvals, eigvects = dmaps_nongeneral(data, epsilon)
     print 'self-adjoint solver took', str(time.clock() - start) + 's'
     maxindex = 5
     eigvects_to_plot = np.array([eigvects[:,-i] for i in range(1, maxindex)])

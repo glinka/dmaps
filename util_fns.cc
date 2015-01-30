@@ -195,12 +195,12 @@ std::vector< double > get_sorted_vals(const std::vector< double >& vals) {
   return sorted_vals;
 }
 
-std::vector< std::vector< double > > get_sorted_vectors(const std::vector< std::vector< double >* >& vectors, const std::vector< int >& sorted_indices) {
+std::vector< std::vector< double > > get_sorted_vectors(const std::vector< std::vector<double> >& vectors, const std::vector< int >& sorted_indices) {
   // assume vectors are stored in rows in "vectos" input
   std::vector< std::vector< double > > sorted_vectors(vectors.size());
   int i = 0;
   for(std::vector< int >::const_iterator index = sorted_indices.begin(); index != sorted_indices.end(); index++) {
-    sorted_vectors[i++] = *vectors[*index];
+    sorted_vectors[i++] = vectors[*index];
   }
   return sorted_vectors;
 }

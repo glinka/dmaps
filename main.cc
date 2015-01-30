@@ -5,7 +5,7 @@
 #include <sstream>
 #include "util_fns.h"
 #include "dmaps.h"
-#include "kernel_fn.h"
+#include "gaussian_kernel.h"
 #include "gen_data.h"
 
 int main(int argc, char *argv[]) {
@@ -13,9 +13,8 @@ int main(int argc, char *argv[]) {
   std::vector< std::string > input_filenames;
   possible_args.push_back("c");
   possible_args.push_back("create-folder");
-  possible_args.push_back("dir");
+  possible_args.push_back("s");
   possible_args.push_back("save");
-  possible_args.push_back("savedata");
   possible_args.push_back("m");
   // loop through all args and parse
   std::vector< std::string > output_data;
@@ -31,12 +30,12 @@ int main(int argc, char *argv[]) {
       found_args = parse_arg(++argv[i], possible_args);
       // run through optional args
       for(std::vector< std::string >::const_iterator arg =  found_args.begin(); arg != found_args.end(); arg++) {
-	if(*arg == "c" || *arg == "create-folder" || *arg == "dir") {
+	if(*arg == "c" || *arg == "create-folder") {
 	  //create new folder
 	  dir = create_directory("data");
 	  i++;
 	}
-	else if(*arg == "savedata" || *arg == "save") {
+	else if(*arg == "s" || *arg == "save") {
 	  // arg values will represent which data to be stored
 	  // must be one or more of the following:
 	  // "W", "eigvals", "eigvects"
@@ -93,19 +92,31 @@ int main(int argc, char *argv[]) {
   }
   // compute the mapping
   if(input_filenames.empty())
-    input_filenames.push_back(gen_swissroll(60, 10));
+    input_filenames.push_back(gen_swissroll(120, 20));
   std::ifstream input_file(input_filenames[0]);
   std::vector< std::vector< double > > test_data = read_data(input_file);
   input_file.close();
   std::cout << "finished importing data from: " << input_filenames[0] << std::endl;
-  dmaps_output* out = dmaps::map(test_data, gaussian_kernel, 1e-08);
+  int embedded_dim = 10;
+  double weight_threshold = 1e-10;
+  Gaussian_Kernel<double> gk_d(1e-4);
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // INIT THIS SHIT:
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  std::vector<double> eigvals;
+  std::vector< std::vector<double> > eigvects, W;
+  int dmaps_success = dmaps::map(test_data, gk_d, eigvals, eigvects, W, embedded_dim, weight_threshold);
   std::cout << "finished dmap " << std::endl;
   // create necessary files to store output data
   if(save_flags.SAVE_W) {
     std::stringstream ss;
     ss << dir << "W";
     std::ofstream W_output(ss.str());
-    save_matrices(W_output, *(out->W));
+    save_matrices(W_output, W);
     W_output.close();
     std::cout << "saved matrix W in: " << ss.str() << std::endl;
   }
@@ -114,15 +125,15 @@ int main(int argc, char *argv[]) {
     std::stringstream ss;
     ss << dir << "eigvals";
     std::ofstream eigvals_output(ss.str());
-    save_vectors(eigvals_output, get_sorted_vals(*(out->eigvals)), m);
+    save_vectors(eigvals_output, get_sorted_vals(eigvals), m);
     eigvals_output.close();
     std::cout << "saved eigenvalues in: " << ss.str() << std::endl;
     // save eigenvectors
     ss.str("");
     ss << dir << "eigvects";
     std::ofstream eigvects_output(ss.str());
-    std::vector< int > sorted_indices = argsort(*(out->eigvals));
-    save_matrices(eigvects_output, get_sorted_vectors(*(out->eigvects), sorted_indices), m);
+    std::vector< int > sorted_indices = argsort(eigvals);
+    save_matrices(eigvects_output, get_sorted_vectors(eigvects, sorted_indices), m);
     eigvects_output.close();
     std::cout << "saved eigenvectors in: " << ss.str() << std::endl;
   }
@@ -130,7 +141,7 @@ int main(int argc, char *argv[]) {
     std::stringstream ss;
     ss << dir << "eigvects";
     std::ofstream eigvects_output(ss.str());
-    save_matrices(eigvects_output, *(out->eigvects));
+    save_matrices(eigvects_output, eigvects);
     eigvects_output.close();
     std::cout << "saved eigenvectors in: " << ss.str() << std::endl;
   }
@@ -138,11 +149,8 @@ int main(int argc, char *argv[]) {
     std::stringstream ss;
     ss << dir << "eigvals";
     std::ofstream eigvals_output(ss.str());
-    save_vectors(eigvals_output, *(out->eigvals));
+    save_vectors(eigvals_output, eigvals);
     eigvals_output.close();
     std::cout << "saved eigenvalues in: " << ss.str() << std::endl;
   }
-  delete out->W;
-  delete out->eigvects;
-  delete out->eigvals;
 }
