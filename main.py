@@ -55,9 +55,9 @@ def dmaps_demo():
     print 'Displaying dataset'
     plot_xyz_data(data[:,0], data[:,1], data[:,2])
     start = time.clock()
-    k = 4
+    k = 5
     print 'Computing embedding'
-    eigvals, eigvects = dmaps.embed_data(data, 5, epsilon=epsilon)
+    eigvals, eigvects = dmaps.embed_data(data, k, epsilon=epsilon)
     print 'Lanczos solver took', str(time.clock() - start) + 's', 'to find top', k, 'eigenvectors'
     print 'Displaying dmaps embeddings'
     for i in range(1, k):
