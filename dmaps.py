@@ -1,3 +1,9 @@
+"""A flexible implementation of the DMAPS dimensionality reduction algorithm in Python.
+
+.. moduleauthor:: Alexander Holiday <holiday@alexanderholiday.com>
+
+"""
+
 import util_fns as uf
 import numpy as np
 import scipy.sparse.linalg as spla
@@ -10,13 +16,12 @@ def _compute_embedding(W, k):
     """Calculates a partial ('k'-dimensional) eigendecomposition of W by first transforming into a self-adjoint matrix and then using the Lanczos algorithm.
 
     Args:
-    W (array): symmetric, shape (npts, npts) array in which W[i,j] is the DMAPS kernel evaluation for points i and j
-    k (int): the number of eigenvectors and eigenvalues to compute
+        W (array): symmetric, shape (npts, npts) array in which W[i,j] is the DMAPS kernel evaluation for points i and j
+        k (int): the number of eigenvectors and eigenvalues to compute
 
     Returns:
-    Returns:
-    eigvals (array): shape (k) vector with first 'k' eigenvectors of DMAPS embedding sorted from largest to smallest
-    eigvects (array): shape ("number of data points", k) array with the k-dimensional DMAPS-embedding eigenvectors. eigvects[:,i] corresponds to the eigenvector of the :math:'i^{th}'-largest eigenvalue, eigval[i].
+        eigvals (array): shape (k) vector with first 'k' eigenvectors of DMAPS embedding sorted from largest to smallest
+        eigvects (array): shape ("number of data points", k) array with the k-dimensional DMAPS-embedding eigenvectors. eigvects[:,i] corresponds to the eigenvector of the :math:`i^{th}`-largest eigenvalue, eigval[i].
     """
     m = W.shape[0]
     # diagonal matrix D, inverse, sqrt
@@ -36,14 +41,14 @@ def embed_data(data, k, metric=_l2_distance, epsilon='mean'):
     """Computes the 'k'-dimensional DMAPS embedding of 'data' using the function 'metric' to compute distances between points and 'epsilon' as the characteristic radius of the neighborhood of each point
 
     Args:
-    data (iterable): typically a shape ("number of data points", "dimension of data") array containing the data as row vectors, but could be a list in which the :math:'i^{th}' entry contains :math:'i^{th}' data point, e.g. an adjacency matrix
-    metric (function): the distance measure to be used in conjunction with 'data', accepting calls like metric(data[i], data[j])
-    k (int): number of dimensions to embed into
-    epsilon (string, float): one of either "median", "mean" or a float. If "median" or "mean", the "median" or "mean" of the distances between all points is used as the epsilon value. If a float is given, this value is used.
+        data (iterable): typically a shape ("number of data points", "dimension of data") array containing the data as row vectors, but could be a list in which the :math:`i^{th}` entry contains :math:`i^{th}` data point, e.g. an adjacency matrix
+            metric (function): the distance measure to be used in conjunction with 'data', accepting calls like metric(data[i], data[j])
+        k (int): number of dimensions to embed into
+        epsilon (string, float): one of either "median", "mean" or a float. If "median" or "mean", the "median" or "mean" of the distances between all points is used as the epsilon value. If a float is given, this value is used.
 
     Returns:
-    eigvals (array): shape (k) vector with first 'k' eigenvectors of DMAPS embedding sorted from largest to smallest
-    eigvects (array): shape ("number of data points", k) array with the k-dimensional DMAPS-embedding eigenvectors. eigvects[:,i] corresponds to the eigenvector of the :math:'i^{th}'-largest eigenvalue, eigval[i].
+        eigvals (array): shape (k) vector with first 'k' eigenvectors of DMAPS embedding sorted from largest to smallest
+        eigvects (array): shape ("number of data points", k) array with the k-dimensional DMAPS-embedding eigenvectors. eigvects[:,i] corresponds to the eigenvector of the :math:`i^{th}`-largest eigenvalue, eigval[i].
     """
     # m is number of data pts, len should work in all cases
     m = len(data)
@@ -71,14 +76,14 @@ def embed_data_customkernel(data, k, kernel):
     """Computes the 'k'-dimensional DMAPS embedding of 'data' using the function 'kernel' to evaluate the DMAPS kernel between points and 'epsilon' as the characteristic radius of the neighborhood of each point. **Typically 'embed_data' should be used which employs the default exponential kernel with a potentially customized metric between points.**
 
     Args:
-    data (iterable): typically a shape ("number of data points", "dimension of data") array containing the data as row vectors, but could be a list in which the :math:'i^{th}' entry contains :math:'i^{th}' data point, e.g. an adjacency matrix
-    kernel (function): the kernel to be used in conjunction with 'data', accepting calls like kernel(data[i], data[j])
-    k (int): number of dimensions to embed into
+        data (iterable): typically a shape ("number of data points", "dimension of data") array containing the data as row vectors, but could be a list in which the :math:`i^{th}` entry contains :math:`i^{th}` data point, e.g. an adjacency matrix
+        kernel (function): the kernel to be used in conjunction with 'data', accepting calls like kernel(data[i], data[j])
+        k (int): number of dimensions to embed into
 
 
     Returns:
-    eigvals (array): shape (k) vector with first 'k' eigenvectors of DMAPS embedding sorted from largest to smallest
-    eigvects (array): shape ("number of data points", k) array with the k-dimensional DMAPS-embedding eigenvectors. eigvects[:,i] corresponds to the eigenvector of the :math:'i^{th}'-largest eigenvalue, eigval[i].
+        eigvals (array): shape (k) vector with first 'k' eigenvectors of DMAPS embedding sorted from largest to smallest
+        eigvects (array): shape ("number of data points", k) array with the k-dimensional DMAPS-embedding eigenvectors. eigvects[:,i] corresponds to the eigenvector of the :math:`i^{th}`-largest eigenvalue, eigval[i].
     """
     # m is number of data pts, len should work in all cases
     m = len(data)
@@ -96,8 +101,8 @@ def epsilon_plot(epsilons, data, fraction_kept=1):
     """Displays a logarithmic plot of :math:`\sum_{i,j} W_{ij}(\epsilon)` versus :math:`\epsilon` over the range of epsilons provided as the first argument. Reasonable :math:`\epsilon` values will fall in the linear range of this figure. Also plots the mean and median of the squared distances for comparison.
     
     Args:
-    epsilons (array): epsilon values at which to calculate :math:`\sum_{i,j} W_{ij}(\epsilon)`. Should span many orders of magnitude to ensure the diagram includes the asymptotes at :math:`\epsilon \rightarrow 0` and :math:`\epsilon \rightarrow \infty`
-    data (array): size (n, p) array where 'n' is the number of data points and 'p' is the dimension of each point
+        epsilons (array): epsilon values at which to calculate :math:`\sum_{i,j} W_{ij}(\epsilon)`. Should span many orders of magnitude to ensure the diagram includes the asymptotes at :math:`\epsilon \\rightarrow 0` and :math:`\epsilon \\rightarrow \infty`
+        data (array): size (n, p) array where 'n' is the number of data points and 'p' is the dimension of each point
     """
     import matplotlib.pyplot as plt
     data = np.copy(uf.thin_array(data, frac_to_keep=fraction_kept))
