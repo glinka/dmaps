@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include "util_fns.h"
+#include "dmaps_util_fns.h"
 #include "dmaps.h"
 #include "gaussian_kernel.h"
 #include "gen_data.h"

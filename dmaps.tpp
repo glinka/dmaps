@@ -5,13 +5,19 @@
 
 
 namespace dmaps {
+
   template <typename T>
   int map(const std::vector< T > &input_data, const Kernel_Function<T>& kernel_fn, std::vector<double>& eigvals, std::vector< std::vector<double> >& eigvects, std::vector< std::vector<double> >& W_out, const int k, const double weight_threshold) {
     int ndata = input_data.size();
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> W(ndata, ndata);
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> W(ndata, ndata);
     for(int i = 0; i < ndata; i++) {
       for(int j = 0; j < ndata; j++) {
 	W(i,j) = kernel_fn.kernel(input_data[i], input_data[j]);
+      }
+    }
+    // ? for vectorization ?
+    for(int i = 0; i < ndata; i++) {
+      for(int j = 0; j < ndata; j++) {
 	if(W(i,j) < weight_threshold) {
 	  W(i,j) = 0;
 	}
@@ -41,4 +47,5 @@ namespace dmaps {
     eigvals = std::vector<double>(eigvals_ptr, eigvals_ptr + k);
     return iram_success == 1;
   }
+
 }

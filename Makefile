@@ -1,9 +1,9 @@
-SRCS=main.cc util_fns.cc
+SRCS=main.cc dmaps_util_fns.cc
 OBJECTS=$(SRCS:.cc=.o)
 
 CXX = g++
 
-CXXFLAGS = -g -Wall -std=c++0x -leigensolvers -O3
+CXXFLAGS = -g -Wall -std=c++0x -I/home/oakridge/holiday/workspace/newton_gmres -leigensolvers -O3
 
 all: dmaps
 
