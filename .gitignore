@@ -7,3 +7,8 @@ dmaps
 *.csv
 data*
 .nfs*
+build*
+source*
+outputdata*
+*#
+.#*

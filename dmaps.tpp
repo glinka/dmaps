@@ -1,15 +1,14 @@
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
-#include <cmath>
 #include "eigen_solvers.h"
-
 
 namespace dmaps {
 
+
   template <typename T>
-  int map(const std::vector< T > &input_data, const Kernel_Function<T>& kernel_fn, std::vector<double>& eigvals, std::vector< std::vector<double> >& eigvects, std::vector< std::vector<double> >& W_out, const int k, const double weight_threshold) {
+  int map(const std::vector<T>& input_data, const Kernel_Function<T>& kernel_fn, Vector& eigvals, Matrix& eigvects, Matrix& W, const int k=5, const double weight_threshold = 0) {
+
+    // calculate W entries
     int ndata = input_data.size();
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> W(ndata, ndata);
+    W = Matrix(ndata, ndata);
     for(int i = 0; i < ndata; i++) {
       for(int j = 0; j < ndata; j++) {
 	W(i,j) = kernel_fn.kernel(input_data[i], input_data[j]);
@@ -23,29 +22,92 @@ namespace dmaps {
 	}
       }
     }
-    Eigen::VectorXd Degs = W.rowwise().sum();
-    Eigen::MatrixXd D_half_inv = Eigen::MatrixXd::Zero(ndata, ndata);
-    for(int i = 0; i < ndata; i++) {
-      D_half_inv(i,i) = pow(Degs[i], -0.5);
-    }
-    // normalize W
-    Eigen::MatrixXd S = D_half_inv*W*D_half_inv;
-    Eigen::MatrixXd V_ritz;
-    Eigen::VectorXd l_ritz;
+
+    // calculate row-stochastic matrix, calculate partial eigendecomp
+    // normalize W to make symmetric
+    Matrix D_half_inv = W.rowwise().sum().array().pow(-0.5).matrix().asDiagonal();
+    Matrix S = D_half_inv*W*D_half_inv;
+    Matrix V_ritz;
+    Vector l_ritz;
     const int iram_maxiter=10*ndata, qr_maxiter=20*ndata;
-    const int iram_success = eigen_solver::arnoldi_method_imprestart_hermitian(S, Eigen::VectorXd::Ones(ndata), V_ritz, l_ritz, k, 2*k, iram_maxiter, qr_maxiter);
-    Eigen::MatrixXd evects = D_half_inv*V_ritz;
-    double *eigvals_ptr = l_ritz.data();
-    double *eigvects_ptr = evects.data();
-    double *W_ptr = W.data();
-    W_out = std::vector< std::vector<double> >(k);
-    eigvects = std::vector< std::vector<double> >(k);
-    for(int j = 0; j < k; j++) {
-      W_out[j] = std::vector<double>(W_ptr + j*ndata, W_ptr + (j+1)*ndata);
-      eigvects[j] = std::vector<double>(eigvects_ptr + j*ndata, eigvects_ptr + (j+1)*ndata);
+    const int iram_success = eigen_solver::arnoldi_method_imprestart_hermitian(S, Vector::Ones(ndata), V_ritz, l_ritz, k, 2*k, iram_maxiter, qr_maxiter);
+    eigvects = D_half_inv*V_ritz;
+    eigvals = l_ritz;
+    return iram_success == 1;
+  }
+    
+
+  template <typename T>
+  int map(const std::vector< T > &input_data, const Kernel_Function<T>& kernel_fn, std::vector<double>& eigvals, std::vector< std::vector<double> >& eigvects, std::vector< std::vector<double> >& W, const int k, const double weight_threshold) {
+
+    // set up "private" versions of output, to be converted into STL vectors later on
+    Matrix _W, _eigvects;
+    Vector _eigvals;
+    int iram_success = map(input_data, kernel_fn, _eigvals, _eigvects, _W, k, weight_threshold);
+
+    // copy data into output STL containers
+    // unless _W is stored as row-major, I see now way of efficiently copying this data
+    const int ndata = input_data.size();
+    W = std::vector< std::vector<double> >(ndata, std::vector<double>(ndata));
+    for(int i = 0; i < ndata; i++) {
+      W[i][i] = _W(i,i);
+      for(int j = i; j < ndata; j++) {
+	W[i][j] = _W(i,j);
+      }
     }
+    double *eigvects_ptr = _eigvects.data();
+    eigvects = std::vector< std::vector<double> >(k);
+    for(int i = 0; i < k; i++) {
+      eigvects[i] = std::vector<double>(eigvects_ptr + i*ndata, eigvects_ptr + (i+1)*ndata);
+    }
+    double *eigvals_ptr = _eigvals.data();
     eigvals = std::vector<double>(eigvals_ptr, eigvals_ptr + k);
     return iram_success == 1;
+  }
+
+
+  template <typename T>
+  int map(const std::vector<T>& input_data, const Kernel_Function<T>& kernel_fn, std::vector<double>& eigvals, std::vector< std::vector<double> >& eigvects, const int k=5, const double weight_threshold = 0) {
+
+    // set up "private" versions of output, to be converted into STL vectors later on
+    Matrix _W, _eigvects;
+    Vector _eigvals;
+    int iram_success = map(input_data, kernel_fn, _eigvals, _eigvects, _W, k, weight_threshold);
+
+    // copy data into output STL containers
+    double *eigvects_ptr = _eigvects.data();
+    eigvects = std::vector< std::vector<double> >(k);
+    const int ndata = input_data.size();
+    for(int i = 0; i < k; i++) {
+      eigvects[i] = std::vector<double>(eigvects_ptr + i*ndata, eigvects_ptr + (i+1)*ndata);
+    }
+    double *eigvals_ptr = _eigvals.data();
+    eigvals = std::vector<double>(eigvals_ptr, eigvals_ptr + k);
+    return iram_success == 1;
+  }
+
+
+  template <typename data_format, typename data_type>
+  std::vector<double> test_kernels(const std::vector<data_format>& input_data, const std::vector< Gaussian_Kernel<data_type> >& kernel_fns) {
+    const int npts = input_data.size();
+    const int nkernels = kernel_fns.size();
+    std::vector<double> w_sums(nkernels, 0);
+    int sum_count = 0;
+    // loop over each kernel
+    for(auto& kernel: kernel_fns) {
+      // add up off-diagonal entries in upper right of matrix
+      for(int i = 0; i < npts; i++) {
+	for(int j = i+1; j < npts; j++) {
+	  w_sums[sum_count] += kernel.kernel(input_data[i], input_data[j]);
+	}
+	// double to include off-diagonal in lower left
+	w_sums[sum_count] *= 2;
+	// finally, include diagonal elements
+	w_sums[sum_count] += kernel.kernel(input_data[i], input_data[i]);
+      }
+      sum_count++;
+    }
+    return w_sums;
   }
 
 }
