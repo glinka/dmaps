@@ -4,10 +4,11 @@
 #include <Eigen/Geometry>
 #include <vector>
 #include <cmath>
-#include "kernel_function.h"
 
 typedef Eigen::MatrixXd Matrix;
 typedef Eigen::VectorXd Vector;
+
+class Kernel_Function;
 
 namespace dmaps {
   /**

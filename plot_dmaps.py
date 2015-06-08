@@ -31,7 +31,7 @@ def plot_xy(x, y, xlabel="", ylabel="", title="", color='b', xscale='linear', ys
         plt.tick_params(axis='both', which='major', labelsize=0)
     # default to plot
     if scatter:
-        ax.scatter(x, y, c=color, lw=1, **kwargs)
+        ax.scatter(x, y, c=color, lw=0, **kwargs)
     else:
         ax.plot(x, y, c=color, lw=1, **kwargs)
     ax.set_xlabel(xlabel)
@@ -58,7 +58,7 @@ def plot_embeddings(eigvects, eigvals, k='all', t=0, plot_2d=True, plot_3d=False
             for j in range(i+1, k):
                 xlabel = r'$\Phi_' + str(i+1) + '$'
                 ylabel = r'$\Phi_' + str(j+1) + '$'
-                plot_xy(np.power(eigvals[i], t)*eigvects[:,i], np.power(eigvals[j], t)*eigvects[:,j], xlabel=xlabel, ylabel=ylabel, s=50, **kwargs)
+                plot_xy(np.power(eigvals[i], t)*eigvects[:,i], np.power(eigvals[j], t)*eigvects[:,j], xlabel=xlabel, ylabel=ylabel, s=50, scatter=True, hide_ticks=True, **kwargs)
     if plot_3d:
         # loop through all the combinations
         for i in range(1, k):
