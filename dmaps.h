@@ -5,7 +5,6 @@
 #include <vector>
 #include <cmath>
 #include "kernel_function.h"
-#include "gaussian_kernel.h"
 
 typedef Eigen::MatrixXd Matrix;
 typedef Eigen::VectorXd Vector;
@@ -27,7 +26,7 @@ namespace dmaps {
    * \returns indicator of success: 0 -> success, 1 -> failure
    */
   template <typename T>
-    int map(const std::vector<T>& input_data, const Kernel_Function<T>& kernel_fn, std::vector<double>& eigvals, std::vector< std::vector<double> >& eigvects, std::vector< std::vector<double> >& W, const int k=5, const double weight_threshold = 0);
+    int map(const std::vector<T>& input_data, const Kernel_Function& kernel_fn, std::vector<double>& eigvals, std::vector< std::vector<double> >& eigvects, std::vector< std::vector<double> >& W, const int k=5, const double weight_threshold = 0);
     /**
    * Performs DMAP on 'input_data' using kernel 'kernel_fn', calculating a 'k'-dimensional embedding. <b> This method returns STL vectors and vector-of-vectors. This method does not return the W matrix. </b> As the entries of W are generally not of interest, this method simply saves copying data from Eigen::MatrixXd to an STL vector-of-vectors.
    *
@@ -43,7 +42,7 @@ namespace dmaps {
    * \returns indicator of success: 0 -> success, 1 -> failure
    */
   template <typename T>
-    int map(const std::vector<T>& input_data, const Kernel_Function<T>& kernel_fn, std::vector<double>& eigvals, std::vector< std::vector<double> >& eigvects, const int k=5, const double weight_threshold = 0);
+    int map(const std::vector<T>& input_data, const Kernel_Function& kernel_fn, std::vector<double>& eigvals, std::vector< std::vector<double> >& eigvects, const int k=5, const double weight_threshold = 0);
   /**
    * Performs DMAP on 'input_data' using kernel 'kernel_fn', calculating a 'k'-dimensional embedding. <b> This method returns Eigen-type vectors and matrices. </b>
    *
@@ -60,7 +59,7 @@ namespace dmaps {
    * \returns indicator of success: 0 -> success, 1 -> failure
    */
   template <typename T>
-    int map(const std::vector<T>& input_data, const Kernel_Function<T>& kernel_fn, Vector& eigvals, Matrix& eigvects, Matrix& W, const int k=5, const double weight_threshold = 0);
+    int map(const std::vector<T>& input_data, const Kernel_Function& kernel_fn, Vector& eigvals, Matrix& eigvects, Matrix& W, const int k=5, const double weight_threshold = 0);
   /**
    * Investigates suitability of different DMAP kernels for use on 'input_data' by calculating \f$\sum_i \sum_j W_{ij}\f$ for each kernel. A kernel should be chosen from the region in which a plot of the output sum vs. kernel parameter is linear.
    *
@@ -69,8 +68,8 @@ namespace dmaps {
    * \param kernel_fns vector of kernel functions, each of which will be used to calculate a single value \f$\sum_i \sum_j k(x_i, x_j)\f$
    * \returns vector of \f$\sum_i \sum_j k(x_i, x_j)\f$ values for each input kernel
    */
-  template <typename data_format, typename data_type>
-    std::vector<double> test_kernels(const std::vector<data_format>& input_data, const std::vector< Gaussian_Kernel<double> >& kernel_fns);
+  template <typename T>
+    std::vector<double> test_kernels(const std::vector<T>& input_data, const std::vector<Kernel_Function>& kernel_fns);
 }
 
 #include "dmaps.tpp"

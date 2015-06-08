@@ -3,7 +3,7 @@ OBJECTS=$(SRCS:.cc=.o)
 
 CXX = g++
 
-CXXFLAGS = -g -Wall -std=c++0x -O3 -I/home/oakridge/holiday/workspace/newton_gmres -leigensolvers -I/home/oakridge/holiday/workspace/util_fns -lutil_fns
+CXXFLAGS = -g -Wall -std=c++0x -I/home/oakridge/holiday/workspace/newton_gmres -leigensolvers -I/home/oakridge/holiday/workspace/util_fns -lutil_fns -O3
 
 all: dmaps
 

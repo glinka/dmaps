@@ -7,7 +7,7 @@ def gen_swissroll(n_thetas=20, n_zvals=20, var=0.5):
     """Generates a swissroll dataset in three dimensions
 
     Returns:
-    swissroll (array): shape (n_zvals*n_thetas, 3) array in which each row represents the (x,y,z) coordinates of a point on the swissroll
+        swissroll (array): shape (n_zvals*n_thetas, 3) array in which each row represents the (x,y,z) coordinates of a point on the swissroll
     """
     # sample points over square, twist into roll
     size = 64
@@ -31,9 +31,9 @@ def dmaps_demo():
     print 'Swissroll generated with', data.shape[0], 'points'
     print 'Displaying dataset'
     plot_dmaps.plot_xyz(data[:,0], data[:,1], data[:,2], color=np.linalg.norm(data[:,:2], axis=1), s=80)
-    # # investigate proper epsilon
-    # print 'Investigating effect of epsilon on embedding (may take some time)'
-    # dmaps.epsilon_plot(np.logspace(-3, 3, 10), data)
+    # investigate proper epsilon
+    print 'Investigating effect of epsilon on embedding (may take some time)'
+    plot_dmaps.epsilon_plot(np.logspace(-3, 3, 10), data)
     start = time.clock()
     k = 30
     print 'Computing embedding'
@@ -49,7 +49,7 @@ def dmaps_demo():
         for j in range(i+1, k):
             xlabel = r'$\Phi_' + str(i+1) + '$'
             ylabel = r'$\Phi_' + str(j+1) + '$'
-            plot_dmaps.plot_xy(eigvals[i]*eigvects[:,i], eigvals[j]*eigvects[:,j], xlabel=xlabel, ylabel=ylabel, title='Embedding dataset with ' + xlabel + ' and ' + ylabel, color=np.linalg.norm(data[:,:2], axis=1), s=50)
+            plot_dmaps.plot_xy(eigvals[i]*eigvects[:,i], eigvals[j]*eigvects[:,j], xlabel=xlabel, ylabel=ylabel, title='Embedding dataset with ' + xlabel + ' and ' + ylabel, color=np.linalg.norm(data[:,:2], axis=1), s=50, scatter=True, hide_ticks=True)
 
 if __name__=="__main__":
     # print 'no'

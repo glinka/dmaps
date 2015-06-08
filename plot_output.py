@@ -41,16 +41,23 @@ def plot_input(filename):
 if __name__=="__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--eigenvalues', '-eigvals', nargs=1, type=str, default=None)
-    parser.add_argument('--eigenvectors', '-eigvects', nargs=1, type=str, default=None)
-    parser.add_argument('--input-data', '-indata', nargs=1, type=str, default=None)
-    parser.add_argument('--kernel-sums', nargs=1, type=str, default=None)
+    parser.add_argument('--eigenvalues', '-eigvals', type=str, default=None)
+    parser.add_argument('--eigenvectors', '-eigvects', type=str, default=None)
+    parser.add_argument('--input-data', '-indata', type=str, default=None)
+    parser.add_argument('--epsilons', type=str, default=None)
+    parser.add_argument('--kernel-sums', type=str, default=None)
     args = parser.parse_args()
     if (args.eigenvalues and args.eigenvectors) is not None:
         # should be pre-sorted from low to high
-        eigvals = uf.get_data(args.eigenvalues[0], header_rows=0, delim=',')
-        eigvects = uf.get_data(args.eigenvectors[0], header_rows=0, delim=',')
+        eigvals = uf.get_data(args.eigenvalues, header_rows=0, delim=',')
+        eigvects = uf.get_data(args.eigenvectors, header_rows=0, delim=',')
         plot_dmaps.plot_embeddings(eigvects.T, eigvals)
     # used to visualize the test data
     if args.input_data is not None:
-        plot_input(args.input_data[0])
+        plot_input(args.input_data)
+    if (args.epsilons and args.kernel_sums) is not None:
+        epsilons = uf.get_data(args.epsilons, header_rows=0)
+        kernel_sums = uf.get_data(args.kernel_sums, header_rows=0)
+        print epsilons, kernel_sums
+        plot_dmaps.plot_xy(epsilons, kernel_sums, xlabel=r"$\epsilon$", ylabel="$\sum W_{ij}$", xscale='log', yscale='log')
+        

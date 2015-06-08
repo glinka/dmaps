@@ -4,14 +4,14 @@ namespace dmaps {
 
 
   template <typename T>
-  int map(const std::vector<T>& input_data, const Kernel_Function<T>& kernel_fn, Vector& eigvals, Matrix& eigvects, Matrix& W, const int k=5, const double weight_threshold = 0) {
+  int map(const std::vector<T>& input_data, const Kernel_Function& kernel_fn, Vector& eigvals, Matrix& eigvects, Matrix& W, const int k=5, const double weight_threshold = 0) {
 
     // calculate W entries
     int ndata = input_data.size();
     W = Matrix(ndata, ndata);
     for(int i = 0; i < ndata; i++) {
       for(int j = 0; j < ndata; j++) {
-	W(i,j) = kernel_fn.kernel(input_data[i], input_data[j]);
+	W(i,j) = kernel_fn(input_data[i], input_data[j]);
       }
     }
     // ? for vectorization ?
@@ -38,7 +38,7 @@ namespace dmaps {
     
 
   template <typename T>
-  int map(const std::vector< T > &input_data, const Kernel_Function<T>& kernel_fn, std::vector<double>& eigvals, std::vector< std::vector<double> >& eigvects, std::vector< std::vector<double> >& W, const int k, const double weight_threshold) {
+  int map(const std::vector< T > &input_data, const Kernel_Function& kernel_fn, std::vector<double>& eigvals, std::vector< std::vector<double> >& eigvects, std::vector< std::vector<double> >& W, const int k, const double weight_threshold) {
 
     // set up "private" versions of output, to be converted into STL vectors later on
     Matrix _W, _eigvects;
@@ -67,7 +67,7 @@ namespace dmaps {
 
 
   template <typename T>
-  int map(const std::vector<T>& input_data, const Kernel_Function<T>& kernel_fn, std::vector<double>& eigvals, std::vector< std::vector<double> >& eigvects, const int k=5, const double weight_threshold = 0) {
+  int map(const std::vector<T>& input_data, const Kernel_Function& kernel_fn, std::vector<double>& eigvals, std::vector< std::vector<double> >& eigvects, const int k=5, const double weight_threshold = 0) {
 
     // set up "private" versions of output, to be converted into STL vectors later on
     Matrix _W, _eigvects;
@@ -87,27 +87,30 @@ namespace dmaps {
   }
 
 
-  template <typename data_format, typename data_type>
-  std::vector<double> test_kernels(const std::vector<data_format>& input_data, const std::vector< Gaussian_Kernel<data_type> >& kernel_fns) {
+  template <typename T>
+  std::vector<double> test_kernels(const std::vector<T>& input_data, const std::vector<Kernel_Function>& kernel_fns) {
     const int npts = input_data.size();
     const int nkernels = kernel_fns.size();
     std::vector<double> w_sums(nkernels, 0);
     int sum_count = 0;
     // loop over each kernel
-    for(auto& kernel: kernel_fns) {
+    for(auto kernel: kernel_fns) {
       // add up off-diagonal entries in upper right of matrix
       for(int i = 0; i < npts; i++) {
-	for(int j = i+1; j < npts; j++) {
-	  w_sums[sum_count] += kernel.kernel(input_data[i], input_data[j]);
-	}
-	// double to include off-diagonal in lower left
-	w_sums[sum_count] *= 2;
-	// finally, include diagonal elements
-	w_sums[sum_count] += kernel.kernel(input_data[i], input_data[i]);
+  	for(int j = i+1; j < npts; j++) {
+  	  w_sums[sum_count] += kernel(input_data[i], input_data[j]);
+  	}
+      }
+      // double to include off-diagonal in lower left
+      w_sums[sum_count] *= 2;
+      // finally, include diagonal elements
+      for(int i = 0; i < npts; i++) {
+	w_sums[sum_count] += kernel(input_data[i], input_data[i]);
       }
       sum_count++;
     }
     return w_sums;
   }
+
 
 }

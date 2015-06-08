@@ -6,7 +6,7 @@
 #include <util_fns.h>
 #include "dmaps_util_fns.h"
 #include "dmaps.h"
-#include "gaussian_kernel.h"
+#include "kernel_function.h"
 #include "gen_data.h"
 
 /**
@@ -47,42 +47,35 @@ int main(int argc, char *argv[]) {
   int embedded_dim = 10;
   double weight_threshold = 1e-10;
   // set up kernel, use standard e^(d(x, y)/ epsilon^2)
-  Gaussian_Kernel<double> gk_d(epsilon);
+  Kernel_Function gaussian_kernel(epsilon); // standard gaussian kernel
   std::vector<double> eigvals;
   std::vector< std::vector<double> > eigvects, W;
-  int dmaps_success = dmaps::map(test_data, gk_d, eigvals, eigvects, W, embedded_dim, weight_threshold);
+  int dmaps_success = dmaps::map(test_data, gaussian_kernel, eigvals, eigvects, W, embedded_dim, weight_threshold);
   std::cout << "finished dmap " << std::endl;
 
   // save eigenvalues
   std::string output_dir = "./outputdata/";
-  std::stringstream ss;
-  ss << output_dir << "eigvals";
-  util_fns::save_vector(dmaps_utils::get_sorted_vals(eigvals), ss.str());
+  util_fns::save_vector(dmaps_utils::get_sorted_vals(eigvals), output_dir + "eigvals.csv");
   // save eigenvectors
-  ss.str("");
-  ss << output_dir << "eigvects";
   std::vector< int > sorted_indices = dmaps_utils::argsort(eigvals);
-  util_fns::save_matrix(eigvects, ss.str());
-  util_fns::save_matrix(dmaps_utils::get_sorted_vectors(eigvects, sorted_indices), ss.str());
+  util_fns::save_matrix(dmaps_utils::get_sorted_vectors(eigvects, sorted_indices), output_dir + "eigvects.csv");
   std::cout << "saved eigenvalues and eigenvectors in: " << output_dir << std::endl;
+
+  // test test_kernels function over log-spaced epsilons
+  const int nkernels = 20;
+  const int lower_exp = -3, upper_exp = 3;
+  Vector epsilons = Vector::LinSpaced(nkernels, lower_exp, upper_exp);
+  for (int i = 0; i < nkernels; i++) {
+    epsilons[i] = pow(10, epsilons[i]);
+  }
+  std::vector<Kernel_Function> kernels;
+  for (int i = 0; i < nkernels; i++) {
+    kernels.push_back(Kernel_Function(epsilons[i]));
+  }
+  std::vector<double> w_sums = dmaps::test_kernels(test_data, kernels);
+  // save output
+  util_fns::save_vector(w_sums, "./outputdata/w_sums.csv");
+  util_fns::save_vector(std::vector<double>(epsilons.data(), epsilons.data()+nkernels), "./outputdata/epsilons.csv");
+
   return dmaps_success;
-
-/*   // test test_kernels function over log-spaced epsilons */
-/*   const int nkernels = 20; */
-/*   const int lower_exp = -3, upper_exp = 3; */
-/*   Vector epsilons = Vector::LinSpaced(nkernels, lower_exp, upper_exp); */
-/*   for (int i = 0; i < nkernels; i++) { */
-/*     epsilons[i] = pow(10, epsilons[i]); */
-/*   } */
-  
-/* std::vector< Gaussian_Kernel<double> > kernels; */
-/*   for (int i = 0; i < nkernels; i++) { */
-/*     kernels.push_back(Gaussian_Kernel<double>(epsilons[i])); */
-/*   } */
-/*   std::vector<double> w_sums = dmaps::test_kernels(test_data, kernels); */
-
-/*   // save output */
-/*   util_fns::save_vector(w_sums, "./outputdata/w_sums.csv"); */
-/*   /\* util_fns::save_vector(epsilons, "./outputdata/epsilons.csv"); *\/ */
-
 }
