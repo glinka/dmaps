@@ -58,6 +58,5 @@ if __name__=="__main__":
     if (args.epsilons and args.kernel_sums) is not None:
         epsilons = uf.get_data(args.epsilons, header_rows=0)
         kernel_sums = uf.get_data(args.kernel_sums, header_rows=0)
-        print epsilons, kernel_sums
         plot_dmaps.plot_xy(epsilons, kernel_sums, xlabel=r"$\epsilon$", ylabel="$\sum W_{ij}$", xscale='log', yscale='log')
         

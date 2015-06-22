@@ -4,7 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import util_fns as uf
 
-def plot_xyz(x, y, z, xlabel="x", ylabel="y", zlabel="z", color='b', **kwargs):
+def plot_xyz(x, y, z, xlabel="x", ylabel="y", zlabel="z", color='b', filename=False, **kwargs):
     """Plots three-dimensional data, used to display swissroll dataset"""
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -18,9 +18,12 @@ def plot_xyz(x, y, z, xlabel="x", ylabel="y", zlabel="z", color='b', **kwargs):
     ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
     ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
     plt.tick_params(axis='both', which='major', labelsize=0)
-    plt.show()
+    if filename is not False:
+        plt.savefig(filename)
+    else:
+        plt.show()
 
-def plot_xy(x, y, xlabel="", ylabel="", title="", color='b', xscale='linear', yscale='linear', scatter=False, hide_ticks=False, **kwargs):
+def plot_xy(x, y, xlabel="", ylabel="", title="", color='b', xscale='linear', yscale='linear', scatter=False, hide_ticks=False, filename=False, **kwargs):
     """Plots two-dimensional data, used to display DMAPS results (two-dimensional embeddings)"""
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -37,9 +40,12 @@ def plot_xy(x, y, xlabel="", ylabel="", title="", color='b', xscale='linear', ys
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(title)
-    plt.show()
+    if filename is not False:
+        plt.savefig(filename)
+    else:
+        plt.show()
 
-def plot_embeddings(eigvects, eigvals, k='all', t=0, plot_2d=True, plot_3d=False, **kwargs):
+def plot_embeddings(eigvects, eigvals, k='all', t=0, plot_2d=True, plot_3d=False, filename=False, **kwargs):
     """Plots the "k Choose 2" different 2d embeddings based on the top 'k' eigenvectors from DMAPS
 
     Args:
@@ -52,13 +58,6 @@ def plot_embeddings(eigvects, eigvals, k='all', t=0, plot_2d=True, plot_3d=False
     """
     if k is 'all':
         k = eigvals.shape[0]
-    if plot_2d:
-        # loop through all the combinations
-        for i in range(1, k):
-            for j in range(i+1, k):
-                xlabel = r'$\Phi_' + str(i+1) + '$'
-                ylabel = r'$\Phi_' + str(j+1) + '$'
-                plot_xy(np.power(eigvals[i], t)*eigvects[:,i], np.power(eigvals[j], t)*eigvects[:,j], xlabel=xlabel, ylabel=ylabel, s=50, scatter=True, hide_ticks=True, **kwargs)
     if plot_3d:
         # loop through all the combinations
         for i in range(1, k):
@@ -67,7 +66,15 @@ def plot_embeddings(eigvects, eigvals, k='all', t=0, plot_2d=True, plot_3d=False
                     xlabel = r'$\Phi_' + str(i+1) + '$'
                     ylabel = r'$\Phi_' + str(j+1) + '$'
                     zlabel = r'$\Phi_' + str(p+1) + '$'
-                    plot_xyz(np.power(eigvals[i], t)*eigvects[:,i], np.power(eigvals[j], t)*eigvects[:,j], np.power(eigvals[p], t)*eigvects[:,p], xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, s=50, **kwargs)
+                    plot_xyz(np.power(eigvals[i], t)*eigvects[:,i], np.power(eigvals[j], t)*eigvects[:,j], np.power(eigvals[p], t)*eigvects[:,p], xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, s=50, filename=filename, **kwargs)
+    if plot_2d:
+        # loop through all the combinations
+        for i in range(1, k):
+            for j in range(i+1, k):
+                xlabel = r'$\Phi_' + str(i+1) + '$'
+                ylabel = r'$\Phi_' + str(j+1) + '$'
+                plot_xy(np.power(eigvals[i], t)*eigvects[:,i], np.power(eigvals[j], t)*eigvects[:,j], xlabel=xlabel, ylabel=ylabel, s=50, scatter=True, hide_ticks=True, filename=filename, **kwargs)
+
 
 
 def epsilon_plot(epsilons, data, fraction_kept=1):
