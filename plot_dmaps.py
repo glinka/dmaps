@@ -45,7 +45,7 @@ def plot_xy(x, y, xlabel="", ylabel="", title="", color='b', xscale='linear', ys
     else:
         plt.show()
 
-def plot_embeddings(eigvects, eigvals, k='all', t=0, plot_2d=True, plot_3d=False, filename=False, **kwargs):
+def plot_embeddings(eigvects, eigvals, k='all', t=0, plot_2d=True, plot_3d=False, folder=False, **kwargs):
     """Plots the "k Choose 2" different 2d embeddings based on the top 'k' eigenvectors from DMAPS
 
     Args:
@@ -66,14 +66,22 @@ def plot_embeddings(eigvects, eigvals, k='all', t=0, plot_2d=True, plot_3d=False
                     xlabel = r'$\Phi_' + str(i+1) + '$'
                     ylabel = r'$\Phi_' + str(j+1) + '$'
                     zlabel = r'$\Phi_' + str(p+1) + '$'
-                    plot_xyz(np.power(eigvals[i], t)*eigvects[:,i], np.power(eigvals[j], t)*eigvects[:,j], np.power(eigvals[p], t)*eigvects[:,p], xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, s=50, filename=filename, **kwargs)
+                    if folder is not False:
+                        filename = folder + 'dmap_embedding_' + str(i+1) + '_' + str(j+1) + '_' + str(p+1) + '.png'
+                        plot_xyz(np.power(eigvals[i], t)*eigvects[:,i], np.power(eigvals[j], t)*eigvects[:,j], np.power(eigvals[p], t)*eigvects[:,p], xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, s=50, filename=filename, **kwargs)
+                    else:
+                        plot_xyz(np.power(eigvals[i], t)*eigvects[:,i], np.power(eigvals[j], t)*eigvects[:,j], np.power(eigvals[p], t)*eigvects[:,p], xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, s=50, **kwargs)
     if plot_2d:
         # loop through all the combinations
         for i in range(1, k):
             for j in range(i+1, k):
                 xlabel = r'$\Phi_' + str(i+1) + '$'
                 ylabel = r'$\Phi_' + str(j+1) + '$'
-                plot_xy(np.power(eigvals[i], t)*eigvects[:,i], np.power(eigvals[j], t)*eigvects[:,j], xlabel=xlabel, ylabel=ylabel, s=50, scatter=True, hide_ticks=True, filename=filename, **kwargs)
+                if folder is not False:
+                    filename = folder + 'dmap_embedding_' + str(i+1) + '_' + str(j+1) + '.png'
+                    plot_xy(np.power(eigvals[i], t)*eigvects[:,i], np.power(eigvals[j], t)*eigvects[:,j], xlabel=xlabel, ylabel=ylabel, s=50, scatter=True, hide_ticks=True, filename=filename, **kwargs)
+                else:
+                    plot_xy(np.power(eigvals[i], t)*eigvects[:,i], np.power(eigvals[j], t)*eigvects[:,j], xlabel=xlabel, ylabel=ylabel, s=50, scatter=True, hide_ticks=True, **kwargs)
 
 
 
@@ -118,7 +126,7 @@ def epsilon_plot(epsilons, data, fraction_kept=1):
     plt.show(fig)
 
 
-def kernel_plot(kernels, params, data, fraction_kept=1):
+def kernel_plot(kernels, params, data, fraction_kept=1, filename=False):
     """Displays a logarithmic plot of :math:`\sum_{i,j} W_{ij}(\epsilon)` versus :math:`\epsilon` over the range of epsilons provided as the first argument. Reasonable :math:`\epsilon` values will fall in the linear range of this figure. Also plots the mean and median of the squared distances for comparison.
     
     Args:
@@ -147,5 +155,8 @@ def kernel_plot(kernels, params, data, fraction_kept=1):
     ax.set_xscale('log')
     ax.set_yscale('log')
     ax.legend(loc=2)
-    plt.show(fig)
+    if filename is not False:
+        plt.savefig(filename)
+    else:
+        plt.show(fig)
 
