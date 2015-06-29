@@ -1,29 +1,32 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.colorbar as colorbar
 
 import util_fns as uf
 
-def plot_xyz(x, y, z, xlabel="x", ylabel="y", zlabel="z", color='b', filename=False, **kwargs):
+def plot_xyz(x, y, z, xlabel="x", ylabel="y", zlabel="z", color='b', filename=False, colorbar=False, **kwargs):
     """Plots three-dimensional data, used to display swissroll dataset"""
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_zlabel(zlabel)
-    ax.scatter(x, y, z, c=color, **kwargs)
+    cax = ax.scatter(x, y, z, c=color, **kwargs)
     ax.grid(False)
     # hide labels, too squashed
     ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
     ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
     ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
     plt.tick_params(axis='both', which='major', labelsize=0)
+    if colorbar:
+        fig.colorbar(p)
     if filename is not False:
         plt.savefig(filename)
     else:
         plt.show()
 
-def plot_xy(x, y, xlabel="", ylabel="", title="", color='b', xscale='linear', yscale='linear', scatter=False, hide_ticks=False, filename=False, **kwargs):
+def plot_xy(x, y, xlabel="", ylabel="", title="", color='b', xscale='linear', yscale='linear', scatter=False, hide_ticks=False, filename=False, colorbar=False, **kwargs):
     """Plots two-dimensional data, used to display DMAPS results (two-dimensional embeddings)"""
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -34,7 +37,9 @@ def plot_xy(x, y, xlabel="", ylabel="", title="", color='b', xscale='linear', ys
         plt.tick_params(axis='both', which='major', labelsize=0)
     # default to plot
     if scatter:
-        ax.scatter(x, y, c=color, lw=0, **kwargs)
+        cax = ax.scatter(x, y, c=color, lw=0, **kwargs)
+        if colorbar:
+            fig.colorbar(cax)
     else:
         ax.plot(x, y, c=color, lw=1, **kwargs)
     ax.set_xlabel(xlabel)

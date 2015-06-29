@@ -12,6 +12,7 @@
 /**
  * Demonstrates the DMAPS algorithm on the canonical swissroll dataset, saving the output eigenvectors and eigenvalues in './outputdata/'
  */
+
 int main(int argc, char *argv[]) {
 
   /* either no arguments are supplied and a swissroll is generated with 'gen_swissroll()', the default, while the DMAP uses epsilon = 2.5 */
