@@ -1,12 +1,24 @@
+"""Plotting functions to aid in visualizing DMAP results
+
+.. moduleauthor:: Alexander Holiday <holiday@alexanderholiday.com>
+
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.colorbar as colorbar
 
-import util_fns as uf
-
 def plot_xyz(x, y, z, xlabel="x", ylabel="y", zlabel="z", color='b', filename=False, colorbar=False, **kwargs):
-    """Plots three-dimensional data, used to display swissroll dataset"""
+    """Plots three-dimensional data
+
+    Args:
+        x (array): shape (n,1) vector of x values
+        y (array): shape (n,1) vector of y values
+        z (array): shape (n,1) vector of z values
+        filename (str, optional): if specified, figure is saved with plt.savefig(filename)
+        colorbar (bool, optional): whether or not to include a colorbar on the figure
+    """
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.set_xlabel(xlabel)
@@ -27,7 +39,16 @@ def plot_xyz(x, y, z, xlabel="x", ylabel="y", zlabel="z", color='b', filename=Fa
         plt.show()
 
 def plot_xy(x, y, xlabel="", ylabel="", title="", color='b', xscale='linear', yscale='linear', scatter=False, hide_ticks=False, filename=False, colorbar=False, **kwargs):
-    """Plots two-dimensional data, used to display DMAPS results (two-dimensional embeddings)"""
+    """Plots two-dimensional data
+
+    Args:
+        x (array): shape (n,1) vector of x values
+        y (array): shape (n,1) vector of y values
+        scatter (bool, optional): whether to generate scatter plot (default is line plot, False)
+        hide_ticks (bool, optional): whether to hide tick labels on x and y axes to unclutter the figure (default is False)
+        filename (str, optional): if specified, figure is saved with plt.savefig(filename)
+        colorbar (bool, optional): whether or not to include a colorbar on the figure
+    """
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.set_xscale(xscale)

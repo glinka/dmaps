@@ -7,9 +7,10 @@
 import numpy as np
 import scipy.sparse.linalg as spla
 
-
 def _l2_distance(vector1, vector2):
+    """Returns the l2 norm of vector1 - vector2: :math:`\sqrt{\sum_i (x_i - y_i)^2}`"""
     return np.linalg.norm(vector1 - vector2)
+
 
 def _compute_embedding(W, k):
     """Calculates a partial ('k'-dimensional) eigendecomposition of W by first transforming into a self-adjoint matrix and then using the Lanczos algorithm.
@@ -36,6 +37,7 @@ def _compute_embedding(W, k):
     eigvects = eigvects[:, sorted_indices]
     return eigvals, eigvects
 
+
 def embed_data(data, k, metric=_l2_distance, epsilon='mean'):
     """Computes the 'k'-dimensional DMAPS embedding of 'data' using the function 'metric' to compute distances between points and 'epsilon' as the characteristic radius of the neighborhood of each point
 
@@ -48,6 +50,13 @@ def embed_data(data, k, metric=_l2_distance, epsilon='mean'):
     Returns:
         eigvals (array): shape (k) vector with first 'k' eigenvectors of DMAPS embedding sorted from largest to smallest
         eigvects (array): shape ("number of data points", k) array with the k-dimensional DMAPS-embedding eigenvectors. eigvects[:,i] corresponds to the eigenvector of the :math:`i^{th}`-largest eigenvalue, eigval[i].
+
+    >>> from test_dmaps import gen_swissroll
+    >>> swissroll_data = gen_swissroll()
+    >>> k = 15; epsilon = 2.5
+    >>> eigvals, eigvects = dmaps.embed_data(data, k, epsilon)
+    >>> from plot_dmaps import plot_embeddings
+    >>> plot_embeddings(eigvects, eigvals, k=3)
     """
     # m is number of data pts, len should work in all cases
     m = len(data)
@@ -95,16 +104,22 @@ def embed_data_customkernel(data, k, kernel):
             W[j,i] = W[i,j]
     eigvals, eigvects = _compute_embedding(W, k)
     return eigvals, eigvects
+
     
-def epsilon_plot(epsilons, data, fraction_kept=1, display=True):
+def epsilon_plot(epsilons, data, filename=False):
     """Displays a logarithmic plot of :math:`\sum_{i,j} W_{ij}(\epsilon)` versus :math:`\epsilon` over the range of epsilons provided as the first argument. Reasonable :math:`\epsilon` values will fall in the linear range of this figure. Also plots the mean and median of the squared distances for comparison.
     
     Args:
         epsilons (array): epsilon values at which to calculate :math:`\sum_{i,j} W_{ij}(\epsilon)`. Should span many orders of magnitude to ensure the diagram includes the asymptotes at :math:`\epsilon \\rightarrow 0` and :math:`\epsilon \\rightarrow \infty`
         data (array): size (n, p) array where 'n' is the number of data points and 'p' is the dimension of each point
+        filename (bool): the filename to save the figure as. If left to default value of False, figure is not saved
+
+    >>> from test_dmaps import gen_swissroll
+    >>> swissroll_data = gen_swissroll()
+    >>> epsilons = np.logspace(-3, 3 10)
+    >>> epsilon_plot(epsilons, swissroll_data)
     """
     import matplotlib.pyplot as plt
-    data = np.copy(uf.thin_array(data, frac_to_keep=fraction_kept))
     n = data.shape[0]
     nepsilons = epsilons.shape[0]
     w_sums = np.empty((nepsilons))
@@ -134,21 +149,27 @@ def epsilon_plot(epsilons, data, fraction_kept=1, display=True):
     ax.set_xscale('log')
     ax.set_yscale('log')
     ax.legend(loc=2)
-    plt.savefig('./eps_plot.png')
-    if display:
-        plt.show(fig)
+    if filename is not False:
+        plt.savefig('filename')
+    plt.show(fig)
 
 
-def kernel_plot(kernels, params, data, fraction_kept=1, filename=False):
+def kernel_plot(kernels, params, data, filename=False):
     """Displays a logarithmic plot of :math:`\sum_{i,j} W_{ij}(\epsilon)` versus :math:`\epsilon` over the range of epsilons provided as the first argument. Reasonable :math:`\epsilon` values will fall in the linear range of this figure. Also plots the mean and median of the squared distances for comparison.
     
     Args:
         kernels (list): kernel functions used to calculate :math:`W_{ij} = k(pt_i, pt_j)`. Typically there should be some :math:`\epsilon` parameter in the kernel function that varies over many orders of magnitude.
         params (array): vector of length 'nkernels' containing the different values of the parameter of interest used to create the different 'kernels'. Typically a vector of :math:`\epsilon` values.
         data (array): size (n, p) array where 'n' is the number of data points and 'p' is the dimension of each point
+        filename (bool): the filename to save the figure as. If left to default value of False, figure is not saved
+
+    >>> from test_dmaps import gen_swissroll
+    >>> swissroll_data = gen_swissroll()
+    >>> epsilons = np.logspace(-3, 3 10)
+    >>> kernels = [objective_function_kernel(eps) for eps in epsilons]
+    >>> kernel_plot(kernels, epsilons, swissroll_data)
     """
     import matplotlib.pyplot as plt
-    data = np.copy(uf.thin_array(data, frac_to_keep=fraction_kept))
     n = data.shape[0]
     nkernels = len(kernels)
     w_sums = np.empty((nkernels))
@@ -170,5 +191,4 @@ def kernel_plot(kernels, params, data, fraction_kept=1, filename=False):
     ax.legend(loc=2)
     if filename is not False:
         plt.savefig(filename)
-    else:
-        plt.show(fig)
+    plt.show(fig)
