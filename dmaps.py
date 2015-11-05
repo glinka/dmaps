@@ -12,12 +12,13 @@ def _l2_distance(vector1, vector2):
     return np.linalg.norm(vector1 - vector2)
 
 
-def _compute_embedding(W, k):
+def _compute_embedding(W, k, symmetric=True):
     """Calculates a partial ('k'-dimensional) eigendecomposition of W by first transforming into a self-adjoint matrix and then using the Lanczos algorithm.
 
     Args:
         W (array): symmetric, shape (npts, npts) array in which W[i,j] is the DMAPS kernel evaluation for points i and j
         k (int): the number of eigenvectors and eigenvalues to compute
+        symmetric (bool): indicates whether the Markov matrix is symmetric or not. During standard useage with the default kernel, this will be true allowing for accelerated numerics. **However, if using custom_kernel(), this property may not hold.**
 
     Returns:
         eigvals (array): shape (k) vector with first 'k' eigenvectors of DMAPS embedding sorted from largest to smallest
@@ -27,7 +28,11 @@ def _compute_embedding(W, k):
     # diagonal matrix D, inverse, sqrt
     D_half_inv = np.identity(m)/np.sqrt(np.sum(W,1))
     # transform into self-adjoint matrix and find partial eigendecomp of this transformed matrix
-    eigvals, eigvects = spla.eigsh(np.dot(np.dot(D_half_inv, W), D_half_inv), k=k)
+    eigvals, eigvects = None, None
+    if symmetric:
+        eigvals, eigvects = spla.eigsh(np.dot(np.dot(D_half_inv, W), D_half_inv), k=k) # eigsh (eigs hermitian)
+    else:
+        eigvals, eigvects = spla.eigs(np.dot(np.dot(D_half_inv, W), D_half_inv), k=k) # eigs (plain eigs)
     # transform eigenvectors to match W
     eigvects = np.dot(D_half_inv, eigvects)
     # sort eigvals and corresponding eigvects from largest to smallest magnitude  (reverse order)
@@ -80,7 +85,7 @@ def embed_data(data, k, metric=_l2_distance, epsilon='mean'):
     return eigvals, eigvects
 
 
-def embed_data_customkernel(data, k, kernel):
+def embed_data_customkernel(data, k, kernel, symmetric=False):
     """Computes the 'k'-dimensional DMAPS embedding of 'data' using the function 'kernel' to evaluate the DMAPS kernel between points and 'epsilon' as the characteristic radius of the neighborhood of each point. **Typically 'embed_data' should be used which employs the default exponential kernel with a potentially customized metric between points.**
 
     Args:
@@ -98,11 +103,12 @@ def embed_data_customkernel(data, k, kernel):
     W = np.empty([m, m])
     # first populate W with metrics
     for i in range(m):
-        W[i,i] = kernel(data[i], data[i])
-        for j in range(i+1, m):
+        for j in range(m):
             W[i,j] = kernel(data[i], data[j])
-            W[j,i] = W[i,j]
-    eigvals, eigvects = _compute_embedding(W, k)
+
+    print 'finished constructing kernel matrix'
+
+    eigvals, eigvects = _compute_embedding(W, k, symmetric=symmetric)
     return eigvals, eigvects
 
     
@@ -177,7 +183,7 @@ def kernel_plot(kernels, params, data, filename=False):
     for k, kernel in enumerate(kernels):
         w_sum = 0
         for i in range(n):
-            for j in range(i, n):
+            for j in range(n):
                 w_sum = w_sum + kernel(data[i], data[j])
         w_sums[k] = w_sum
     # plot results

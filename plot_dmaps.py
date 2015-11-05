@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.colorbar as colorbar
 
-def plot_xyz(x, y, z, xlabel="x", ylabel="y", zlabel="z", color='b', filename=False, colorbar=False, **kwargs):
+def plot_xyz(x, y, z, xlabel="x", ylabel="y", zlabel="z", color='b', filename=False, hide_ticks=False, colorbar=False, **kwargs):
     """Plots three-dimensional data
 
     Args:
@@ -25,12 +25,14 @@ def plot_xyz(x, y, z, xlabel="x", ylabel="y", zlabel="z", color='b', filename=Fa
     ax.set_ylabel(ylabel)
     ax.set_zlabel(zlabel)
     cax = ax.scatter(x, y, z, c=color, **kwargs)
-    ax.grid(False)
+    # ax.grid(False)
+    if hide_ticks:
+        # hide ticks, too large, too busy
+        plt.tick_params(axis='both', which='major', labelsize=0)
     # hide labels, too squashed
-    # ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-    # ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-    # ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-    # plt.tick_params(axis='both', which='major', labelsize=0)
+    ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+    ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+    ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
     if colorbar:
         fig.colorbar(p)
     if filename is not False:
