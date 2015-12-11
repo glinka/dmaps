@@ -39,7 +39,8 @@ def _compute_embedding(W, k, symmetric=True):
     sorted_indices = np.argsort(np.abs(eigvals))
     sorted_indices = sorted_indices[::-1]
     eigvals = eigvals[sorted_indices]
-    eigvects = eigvects[:, sorted_indices]
+    # also scale eigenvectors to norm one
+    eigvects = eigvects[:, sorted_indices]/np.linalg.norm(eigvects[:, sorted_indices], axis=0)
     return eigvals, eigvects
 
 
@@ -176,7 +177,7 @@ def kernel_plot(kernels, params, data, filename=False):
     >>> kernel_plot(kernels, epsilons, swissroll_data)
     """
     import matplotlib.pyplot as plt
-    n = data.shape[0]
+    n = len(data) # data.shape[0]
     nkernels = len(kernels)
     w_sums = np.empty((nkernels))
     # loop over epsilons and calculate sum at each value
