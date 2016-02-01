@@ -3,7 +3,7 @@ OBJECTS=$(SRCS:.cc=.o)
 
 CXX = g++
 
-CXXFLAGS = -g -Wall -std=c++0x -I/home/oakridge/holiday/workspace/newton_gmres -leigensolvers -I/home/oakridge/holiday/workspace/util_fns -lutil_fns -O3
+CXXFLAGS = -g -Wall -std=c++0x -leigensolvers -lutil_fns -L/home/alexander/local/lib -I/home/alexander/workspace/newton_gmres -I/home/alexander/workspace/util_fns -I/home/alexander/local/eigen -O3
 
 all: dmaps
 
@@ -11,7 +11,7 @@ all: dmaps
 	$(CXX) $(CXXFLAGS) -c $<
 
 dmaps: $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) -o $@ $^ $(CXXFLAGS)
 
 depend: .depend
 
