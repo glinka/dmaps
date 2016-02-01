@@ -12,6 +12,40 @@ def _l2_distance(vector1, vector2):
     return np.linalg.norm(vector1 - vector2)
 
 
+def _compute_embedding_laplace_beltrami(W, k, symmetric=True):
+    """Calculates a partial ('k'-dimensional) eigendecomposition of W by first transforming into a self-adjoint matrix and then using the Lanczos algorithm. **Unlike '_compute_embedding', this method normalizes W by an estimate of the local probability density at each point in order to remove the influence of nonuniform sampling from the embedding.** In this way, the eigenvalues and eigenvectors should actually approximate the eigenvalues and eigenvectors of the heat operator on the manifold.
+
+    Args:
+        W (array): symmetric, shape (npts, npts) array in which W[i,j] is the DMAPS kernel evaluation for points i and j
+        k (int): the number of eigenvectors and eigenvalues to compute
+        symmetric (bool): indicates whether the Markov matrix is symmetric or not. During standard useage with the default kernel, this will be true allowing for accelerated numerics. **However, if using custom_kernel(), this property may not hold.**
+
+    Returns:
+        eigvals (array): shape (k) vector with first 'k' eigenvectors of DMAPS embedding sorted from largest to smallest
+        eigvects (array): shape ("number of data points", k) array with the k-dimensional DMAPS-embedding eigenvectors. eigvects[:,i] corresponds to the eigenvector of the :math:`i^{th}`-largest eigenvalue, eigval[i].
+    """
+    m = W.shape[0]
+    # diagonal matrix D, inverse, sqrt
+    local_density_estimate_inv = np.identity(m)/np.sum(W,1)
+    W = np.dot(np.dot(local_density_estimate_inv, W), local_density_estimate_inv)
+    # transform into self-adjoint matrix and find partial eigendecomp of this transformed matrix
+    D_half_inv = np.identity(m)/np.sqrt(np.sum(W,1))
+    eigvals, eigvects = None, None
+    if symmetric:
+        eigvals, eigvects = spla.eigsh(np.dot(np.dot(D_half_inv, W), D_half_inv), k=k) # eigsh (eigs hermitian)
+    else:
+        eigvals, eigvects = spla.eigs(np.dot(np.dot(D_half_inv, W), D_half_inv), k=k) # eigs (plain eigs)
+    # transform eigenvectors to match W
+    eigvects = np.dot(D_half_inv, eigvects)
+    # sort eigvals and corresponding eigvects from largest to smallest magnitude  (reverse order)
+    sorted_indices = np.argsort(np.abs(eigvals))[::-1]
+
+    eigvals = eigvals[sorted_indices]
+    # also scale eigenvectors to norm one
+    eigvects = eigvects[:, sorted_indices]/np.linalg.norm(eigvects[:, sorted_indices], axis=0)
+    return eigvals, eigvects    
+    
+
 def _compute_embedding(W, k, symmetric=True):
     """Calculates a partial ('k'-dimensional) eigendecomposition of W by first transforming into a self-adjoint matrix and then using the Lanczos algorithm.
 
@@ -36,15 +70,15 @@ def _compute_embedding(W, k, symmetric=True):
     # transform eigenvectors to match W
     eigvects = np.dot(D_half_inv, eigvects)
     # sort eigvals and corresponding eigvects from largest to smallest magnitude  (reverse order)
-    sorted_indices = np.argsort(np.abs(eigvals))
-    sorted_indices = sorted_indices[::-1]
+    sorted_indices = np.argsort(np.abs(eigvals))[::-1]
+
     eigvals = eigvals[sorted_indices]
     # also scale eigenvectors to norm one
     eigvects = eigvects[:, sorted_indices]/np.linalg.norm(eigvects[:, sorted_indices], axis=0)
     return eigvals, eigvects
 
 
-def embed_data(data, k, metric=_l2_distance, epsilon='mean'):
+def embed_data(data, k, metric=_l2_distance, epsilon='mean', embedding_method=_compute_embedding):
     """Computes the 'k'-dimensional DMAPS embedding of 'data' using the function 'metric' to compute distances between points and 'epsilon' as the characteristic radius of the neighborhood of each point
 
     Args:
@@ -82,7 +116,7 @@ def embed_data(data, k, metric=_l2_distance, epsilon='mean'):
     elif epsilon is "median":
         epsilon = np.median(W[W > 0])
     W = np.exp(-np.power(W, 2)/(epsilon*epsilon))
-    eigvals, eigvects = _compute_embedding(W, k)
+    eigvals, eigvects = embedding_method(W, k)
     return eigvals, eigvects
 
 
@@ -157,7 +191,7 @@ def epsilon_plot(epsilons, data, filename=False):
     ax.set_yscale('log')
     ax.legend(loc=2)
     if filename is not False:
-        plt.savefig('filename')
+        plt.savefig(filename)
     plt.show(fig)
 
 

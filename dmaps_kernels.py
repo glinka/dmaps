@@ -52,3 +52,18 @@ class gradient_kernel:
         >>> print 'kernel evaluation between two pts:', kernel(pt1, pt2) # note how the object is called directly
         """
         return np.exp(-np.power(np.linalg.norm(pt1 - pt2), 2)/self._epsilon - np.power(np.dot(self._gradient(pt1), pt1 - pt2)/self._epsilon, 2))
+
+class data_kernel:
+    """Computes kernel between two points in parameter space, taking into account both the euclidean distance between parameters and the euclidean distance between model predictions at those parameters"""
+    def __init__(self, epsilon, alpha):
+        self._epsilon = epsilon
+        self._alpha = alpha
+
+    def __call__(self, x1, x2):
+        """Custom kernel given by: :math:`k(x_1, x_2) = e^{\frac{-(\|x_1 - x_2 \|^2}{\epsilon} - \alpha \frac{\|m(x_1) - m(x_2)\|^2)}{\epsilon^2}}` where :math:`m(x_i)` is the model prediction at parameter set :math:`x_i`
+
+        Args:
+            x1 (array): first data point in which x = [(parameters), (predictions)]
+            x2 (array): second data point in which x = [(parameters), (predictions)]
+        """
+        return np.exp(-np.power(np.linalg.norm(x1[0] - x2[0]),2)/self._epsilon - self._alpha*np.power(np.linalg.norm(x1[1] - x2[1]), 2)/(self._epsilon*self._epsilon))
