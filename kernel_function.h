@@ -1,6 +1,6 @@
 #ifndef KERNEL_FUNCTION_H
 #define KERNEL_FUNCTION_H
-
+#include <vector>
 
 /* standard gaussian kernel */
 
@@ -24,7 +24,8 @@ class Kernel_Function {
     return std::exp(-norm/(_epsilon*_epsilon));
   }
  private:
-  const double _epsilon;
+  /* const double _epsilon; */
+  double _epsilon;
 };
 
 #endif

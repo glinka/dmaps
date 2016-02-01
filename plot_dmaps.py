@@ -5,7 +5,7 @@ import matplotlib.colorbar as colorbar
 
 import util_fns as uf
 
-def plot_xyz(x, y, z, xlabel="x", ylabel="y", zlabel="z", color='b', filename=False, colorbar=False, **kwargs):
+def plot_xyz(x, y, z, xlabel="x", ylabel="y", zlabel="z", color='b', filename=False, colorbar=False, labelsize=0, **kwargs):
     """Plots three-dimensional data, used to display swissroll dataset"""
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -18,7 +18,7 @@ def plot_xyz(x, y, z, xlabel="x", ylabel="y", zlabel="z", color='b', filename=Fa
     ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
     ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
     ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-    plt.tick_params(axis='both', which='major', labelsize=0)
+    plt.tick_params(axis='both', which='major', labelsize=labelsize)
     if colorbar:
         fig.colorbar(p)
     if filename is not False:
@@ -68,9 +68,9 @@ def plot_embeddings(eigvects, eigvals, k='all', t=0, plot_2d=True, plot_3d=False
         for i in range(1, k):
             for j in range(i+1, k):
                 for p in range(j+1, k):
-                    xlabel = r'$\Phi_' + str(i+1) + '$'
-                    ylabel = r'$\Phi_' + str(j+1) + '$'
-                    zlabel = r'$\Phi_' + str(p+1) + '$'
+                    xlabel = r'$\Phi_' + str(i) + '$'
+                    ylabel = r'$\Phi_' + str(j) + '$'
+                    zlabel = r'$\Phi_' + str(p) + '$'
                     if folder is not False:
                         filename = folder + 'dmap_embedding_' + str(i+1) + '_' + str(j+1) + '_' + str(p+1) + '.png'
                         plot_xyz(np.power(eigvals[i], t)*eigvects[:,i], np.power(eigvals[j], t)*eigvects[:,j], np.power(eigvals[p], t)*eigvects[:,p], xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, s=50, filename=filename, **kwargs)
@@ -80,8 +80,8 @@ def plot_embeddings(eigvects, eigvals, k='all', t=0, plot_2d=True, plot_3d=False
         # loop through all the combinations
         for i in range(1, k):
             for j in range(i+1, k):
-                xlabel = r'$\Phi_' + str(i+1) + '$'
-                ylabel = r'$\Phi_' + str(j+1) + '$'
+                xlabel = r'$\Phi_' + str(i) + '$'
+                ylabel = r'$\Phi_' + str(j) + '$'
                 if folder is not False:
                     filename = folder + 'dmap_embedding_' + str(i+1) + '_' + str(j+1) + '.png'
                     plot_xy(np.power(eigvals[i], t)*eigvects[:,i], np.power(eigvals[j], t)*eigvects[:,j], xlabel=xlabel, ylabel=ylabel, s=50, scatter=True, hide_ticks=True, filename=filename, **kwargs)

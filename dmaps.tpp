@@ -4,7 +4,7 @@ namespace dmaps {
 
 
   template <typename T>
-  int map(const std::vector<T>& input_data, const Kernel_Function& kernel_fn, Vector& eigvals, Matrix& eigvects, Matrix& W, const int k=5, const double weight_threshold = 0) {
+  int map(const std::vector<T>& input_data, const Kernel_Function& kernel_fn, Vector& eigvals, Matrix& eigvects, Matrix& W, const int k, const double weight_threshold) {
 
     // calculate W entries
     int ndata = input_data.size();
@@ -67,7 +67,7 @@ namespace dmaps {
 
 
   template <typename T>
-  int map(const std::vector<T>& input_data, const Kernel_Function& kernel_fn, std::vector<double>& eigvals, std::vector< std::vector<double> >& eigvects, const int k=5, const double weight_threshold = 0) {
+  int map(const std::vector<T>& input_data, const Kernel_Function& kernel_fn, std::vector<double>& eigvals, std::vector< std::vector<double> >& eigvects, const int k, const double weight_threshold) {
 
     // set up "private" versions of output, to be converted into STL vectors later on
     Matrix _W, _eigvects;
