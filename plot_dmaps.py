@@ -73,16 +73,18 @@ def plot_xy(x, y, xlabel="", ylabel="", title="", color='b', xscale='linear', ys
     else:
         plt.show()
 
-def plot_embeddings(eigvects, eigvals, k='all', t=0, plot_2d=True, plot_3d=False, folder=False, **kwargs):
+def plot_embeddings(eigvects, eigvals, k='all', t=1, plot_2d=True, plot_3d=False, folder=False, **kwargs):
     """Plots the "k Choose 2" different 2d embeddings based on the top 'k' eigenvectors from DMAPS
 
     Args:
         eigvects (array): columns contain DMAPS eigenvectors used to embed data
         eigvals (array): DMAPS eigenvalues
+
         .. note::
             It is assumed that the eigenvectors and eigenvalues are sorted in order of decreasing eigenvalue magnitude, i.e. eigvals[i] >= eigvals[i+1] for all i.
+
         k (int, 'all'): either an integer corresponding to the number of eigenvectors to consider or 'all' which considers all combinations
-        t (float): the time parameter in DMAPS, typically zero in our work
+        t (float): the time parameter in DMAPS, typically one in our work
     """
     if k is 'all':
         k = eigvals.shape[0]
