@@ -53,17 +53,17 @@ class gradient_kernel:
         """
         return np.exp(-np.power(np.linalg.norm(pt1 - pt2), 2)/self._epsilon - np.power(np.dot(self._gradient(pt1), pt1 - pt2)/self._epsilon, 2))
 
-class data_kernel:
+class Data_Kernel:
     """Computes kernel between two points in parameter space, taking into account both the euclidean distance between parameters and the euclidean distance between model predictions at those parameters"""
-    def __init__(self, epsilon, alpha):
+    def __init__(self, epsilon, lam):
         self._epsilon = epsilon
-        self._alpha = alpha
+        self._lam = lam
 
     def __call__(self, x1, x2):
-        """Custom kernel given by: :math:`k(x_1, x_2) = e^{\frac{-(\|x_1 - x_2 \|^2}{\epsilon} - \alpha \frac{\|m(x_1) - m(x_2)\|^2)}{\epsilon^2}}` where :math:`m(x_i)` is the model prediction at parameter set :math:`x_i`
+        """Custom kernel given by: :math:`k(x_1, x_2) = e^{\frac{-1}{\lambda^2}(\frac{\| x_1 - x_2 \|^2}{\epsilon^2} + \|m(x_1) - m(x_2)\|^2)}` where :math:`m(x_i)` is the model prediction at parameter set :math:`x_i`
 
         Args:
             x1 (array): first data point in which x = [(parameters), (predictions)]
             x2 (array): second data point in which x = [(parameters), (predictions)]
         """
-        return np.exp(-np.power(np.linalg.norm(x1[0] - x2[0]),2)/self._epsilon - self._alpha*np.power(np.linalg.norm(x1[1] - x2[1]), 2)/(self._epsilon*self._epsilon))
+        return np.exp(-(np.power(np.linalg.norm(x1[0] - x2[0])/self._epsilon,2) + np.power(np.linalg.norm(x1[1] - x2[1]), 2))/(self._lam*self._lam))
