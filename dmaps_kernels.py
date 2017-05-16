@@ -66,4 +66,4 @@ class Data_Kernel:
             x1 (array): first data point in which x = [(parameters), (predictions)]
             x2 (array): second data point in which x = [(parameters), (predictions)]
         """
-        return np.exp(-(np.power(np.linalg.norm(x1[0] - x2[0])/self._epsilon,2) + np.power(np.linalg.norm(x1[1] - x2[1]), 2))/(self._lam*self._lam))
+        return np.exp(-(np.power(np.linalg.norm(x1[0] - x2[0])/self._epsilon,2) + np.power(np.linalg.norm(x1[1] - x2[1])/self._lam, 2)))

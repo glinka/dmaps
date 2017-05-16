@@ -32,10 +32,10 @@ def dmaps_demo():
     print 'Displaying dataset'
     plot_dmaps.plot_xyz(data[:,0], data[:,1], data[:,2], color=np.linalg.norm(data[:,:2], axis=1), s=80)
     # investigate proper epsilon
-    print 'Investigating effect of epsilon on embedding (may take some time)'
-    plot_dmaps.epsilon_plot(np.logspace(-3, 3, 10), data)
+    print 'Investigating effect of epsilon on embedding'
+    dmaps.epsilon_plot(data)
     start = time.clock()
-    k = 30
+    k = 4
     print 'Computing embedding'
     eigvals, eigvects = dmaps.embed_data(data, k, epsilon=epsilon)
 
@@ -47,8 +47,8 @@ def dmaps_demo():
     print 'Displaying dmaps embeddings'
     for i in range(1, k):
         for j in range(i+1, k):
-            xlabel = r'$\Phi_' + str(i+1) + '$'
-            ylabel = r'$\Phi_' + str(j+1) + '$'
+            xlabel = r'$\Phi_{' + str(i+1) + '}$'
+            ylabel = r'$\Phi_{' + str(j+1) + '}$'
             plot_dmaps.plot_xy(eigvals[i]*eigvects[:,i], eigvals[j]*eigvects[:,j], xlabel=xlabel, ylabel=ylabel, title='Embedding dataset with ' + xlabel + ' and ' + ylabel, color=eigvects[:,2], s=50, scatter=True, hide_ticks=True, cmap='jet')
 
 if __name__=="__main__":

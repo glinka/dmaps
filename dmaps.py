@@ -6,6 +6,7 @@
 
 import numpy as np
 import scipy.sparse.linalg as spla
+from scipy.spatial.distance import pdist
 
 def _l2_distance(vector1, vector2):
     """Returns the l2 norm of vector1 - vector2: :math:`\sqrt{\sum_i (x_i - y_i)^2}`"""
@@ -102,9 +103,9 @@ def embed_data(data, k, metric=_l2_distance, epsilon='mean', embedding_method=_c
     m = len(data)
     W = np.empty([m, m])
     # first populate W with metrics
-    for i in range(m):
+    for i in xrange(m):
         W[i,i] = 0
-        for j in range(i+1, m):
+        for j in xrange(i+1, m):
             W[i,j] = metric(data[i], data[j])
             W[j,i] = W[i,j]
     if epsilon is "mean":
@@ -137,8 +138,8 @@ def embed_data_customkernel(data, k, kernel, symmetric=False):
     m = len(data)
     W = np.empty([m, m])
     # first populate W with metrics
-    for i in range(m):
-        for j in range(m):
+    for i in xrange(m):
+        for j in xrange(m):
             W[i,j] = kernel(data[i], data[j])
 
     print 'finished constructing kernel matrix'
@@ -147,48 +148,44 @@ def embed_data_customkernel(data, k, kernel, symmetric=False):
     return eigvals, eigvects
 
     
-def epsilon_plot(epsilons, data, filename=False):
-    """Displays a logarithmic plot of :math:`\sum_{i,j} W_{ij}(\epsilon)` versus :math:`\epsilon` over the range of epsilons provided as the first argument. Reasonable :math:`\epsilon` values will fall in the linear range of this figure. Also plots the mean and median of the squared distances for comparison.
+def epsilon_plot(data, filename=False):
+    """Displays a logarithmic plot of :math:`L(\epsilon)` versus :math:`\epsilon` where :math:`L(\epsilon)` denotes the number of pairwise distances less than :math:`\epsilon`. Thus for small :math:`\epsilon`, :math:`L(\epsilon) \rightarrow n`, while large values of :math:`\epsilon` yield  :math:`L(\epsilon) \rightarrow n^2`. Reasonable :math:`\epsilon` values will fall in the linear range of this figure. Also plots the mean and median of the squared distances for comparison.
     
     Args:
-        epsilons (array): epsilon values at which to calculate :math:`\sum_{i,j} W_{ij}(\epsilon)`. Should span many orders of magnitude to ensure the diagram includes the asymptotes at :math:`\epsilon \\rightarrow 0` and :math:`\epsilon \\rightarrow \infty`
         data (array): size (n, p) array where 'n' is the number of data points and 'p' is the dimension of each point
         filename (bool): the filename to save the figure as. If left to default value of False, figure is not saved
-
     >>> from test_dmaps import gen_swissroll
     >>> swissroll_data = gen_swissroll()
-    >>> epsilons = np.logspace(-3, 3 10)
-    >>> epsilon_plot(epsilons, swissroll_data)
+    >>> epsilon_plot(swissroll_data)
     """
-    import matplotlib.pyplot as plt
     n = data.shape[0]
-    nepsilons = epsilons.shape[0]
-    w_sums = np.empty((nepsilons))
-    # loop over epsilons and calculate sum at each value
-    for k, epsilon in enumerate(epsilons):
-        w_sum = 0
-        for i in range(n):
-            for j in range(i+1, n):
-                w_sum = w_sum + np.exp(-np.power(np.linalg.norm(data[i] - data[j]), 2)/(epsilon*epsilon))
-        # include diagonal (add n) and lower half (multiply by 2) of W
-        w_sums[k] = w_sum*2 + n
-    # calc mean and median, store values in array M
-    M = np.zeros((n,n))
-    for i in range(n):
-        for j in range(i+1, n):
-            M[i,j] = np.linalg.norm(data[i] - data[j])
-    median = np.median(M[M > 0])
-    mean = np.sum(M)/(n*(n-1)/2)
+    # calculate pairwise distances and sort
+    sorted_dists = np.sort(pdist(data, 'euclidean'))
+    # find maximum and minimum distances
+    logeps_min = np.floor(np.log10(sorted_dists[0])).astype(int)
+    logeps_max = np.ceil(np.log10(sorted_dists[-1])).astype(int)
+    # make epsilon values of interest
+    neps = 20
+    Ls = n*np.ones(neps)
+    logepss = np.logspace(logeps_min - 1, logeps_max + 1, neps)
+    current_index = 0
+    for i, eps in enumerate(logepss):
+        while current_index < sorted_dists.shape[0] and sorted_dists[current_index] < eps:
+            current_index += 1
+        Ls[i] += 2*current_index
+    median = np.median(sorted_dists)
+    mean = np.average(sorted_dists)
     # plot results
+    import matplotlib.pyplot as plt
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.plot(epsilons, w_sums)
+    ax.plot(logepss, Ls)
+    ax.set_xscale('log')
+    ax.set_yscale('log')
     ax.axvline(x=mean, c='r', label=r'$\epsilon_{mean}$')
     ax.axvline(x=median, c='g', label=r'$\epsilon_{median}$')
     ax.set_xlabel(r'$\epsilon$')
-    ax.set_ylabel(r'$\sum W_{ij}$')
-    ax.set_xscale('log')
-    ax.set_yscale('log')
+    ax.set_ylabel(r'$L(\epsilon)$')
     ax.legend(loc=2)
     if filename is not False:
         plt.savefig(filename)
@@ -217,8 +214,8 @@ def kernel_plot(kernels, params, data, filename=False):
     # loop over epsilons and calculate sum at each value
     for k, kernel in enumerate(kernels):
         w_sum = 0
-        for i in range(n):
-            for j in range(n):
+        for i in xrange(n):
+            for j in xrange(n):
                 w_sum = w_sum + kernel(data[i], data[j])
         w_sums[k] = w_sum
     # plot results
